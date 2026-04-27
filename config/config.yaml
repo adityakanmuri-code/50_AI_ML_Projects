@@ -1,0 +1,11 @@
+project:
+    name: "Customer_Churn_Model_ANN"
+    base_dir: "C:\\Aditya\\ML_Practice\\ML_Projects\\Customer_Churn_Model_ANN"
+
+logging:
+  log_dir: "logs"
+  log_level: "INFO"
+  log_format: '[%(asctime)s] %(lineno)d %(name)s - %(levelname)s - %(message)s'
+
+data:
+  dataset: "C:\\Aditya\\ML_Practice\\ML_Projects\\Customer_Churn_Model_ANN\\datasets"
