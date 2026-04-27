@@ -8,4 +8,8 @@ logging:
   log_format: '[%(asctime)s] %(lineno)d %(name)s - %(levelname)s - %(message)s'
 
 data:
-  dataset: "C:\\Aditya\\ML_Practice\\ML_Projects\\Customer_Churn_Model_ANN\\datasets"
+  source_type: "file"
+  file_path: "C:\\Aditya\\ML_Practice\\ML_Projects\\Customer_Churn_Model_ANN\\datasets\\Churn_Modelling_train.csv"
+  file_format: "csv"
+  read_params:
+    encoding: "utf-8"
