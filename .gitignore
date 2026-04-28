@@ -1,10 +1,69 @@
-# Python-generated files
+# ==============================
+# Python compiled files
+# ==============================
 __pycache__/
-*.py[oc]
+*.py[cod]
+*$py.class
+
+# ==============================
+# Virtual environments
+# ==============================
+.venv/
+venv/
+env/
+
+# ==============================
+# Logs (your logger.py creates this)
+# ==============================
+logs/
+*.log
+
+# ==============================
+# Data & artifacts (VERY IMPORTANT for your project)
+# ==============================
+artifacts/
+outputs/
+plots/
+reports/
+*.png
+*.jpg
+*.jpeg
+*.pdf
+
+# ==============================
+# Model files
+# ==============================
+models/
+*.pkl
+*.joblib
+*.h5
+*.pt
+
+# ==============================
+# Jupyter Notebook
+# ==============================
+.ipynb_checkpoints/
+
+# ==============================
+# Environment variables
+# ==============================
+.env
+
+# ==============================
+# IDE / Editor files
+# ==============================
+.vscode/
+.idea/
+
+# ==============================
+# OS generated files
+# ==============================
+.DS_Store
+Thumbs.db
+
+# ==============================
+# Build files
+# ==============================
 build/
 dist/
-wheels/
-*.egg-info
-
-# Virtual environments
-.venv
+*.egg-info/

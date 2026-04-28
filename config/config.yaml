@@ -1,6 +1,6 @@
 project:
     name: "Customer_Churn_Model_ANN"
-    base_dir: "C:\\Aditya\\ML_Practice\\ML_Projects\\Customer_Churn_Model_ANN"
+    base_dir: "C:\\Aditya\\ML_Practice\\ML_Projects"
 
 logging:
   log_dir: "logs"
@@ -13,3 +13,51 @@ data:
   file_format: "csv"
   read_params:
     encoding: "utf-8"
+
+transformation:
+  clean_steps:
+    - name: drop_unwanted_cols
+      params:
+        drop_col: ['RowNumber','CustomerId','Surname']
+    
+    - name: fill_na
+      params:
+        targetcol: 'Exited'
+  
+  transform_steps:
+    - name: encode_category
+      params:
+        mappings:
+          Gender:
+            Male: 1
+            Female: 0
+          Geography:
+            France: 0
+            Germany: 1
+            Spain: 2
+    - name: fix_outliers
+      params:
+        numcols: ['Balance','EstimatedSalary']
+        fix_mode: 'IQR'
+        fix_type: 'clip'
+        threshold: 1.5
+eda:
+  plot_data:
+    - name: cat_dist_plot
+      params: 
+        base_folder: 'C:\\Aditya\\ML_Practice\\ML_Projects\\Customer_Churn_Model_ANN\\artifacts'
+        catcols: ['Geography','Gender']
+    - name: num_dist_plot
+      params:
+        base_folder: 'C:\\Aditya\\ML_Practice\\ML_Projects\\Customer_Churn_Model_ANN\\artifacts'
+        numcols: ['CreditScore','Age','Tenure','Balance','EstimatedSalary']
+    - name: correlation_plot
+      params: 
+        base_folder: 'C:\\Aditya\\ML_Practice\\ML_Projects\\Customer_Churn_Model_ANN\\artifacts'
+    - name: cat_tgt_plot
+      params: 
+        catcols: ['Geography','Gender']
+        tgtcol: 'Exited'
+        base_folder: 'C:\\Aditya\\ML_Practice\\ML_Projects\\Customer_Churn_Model_ANN\\artifacts'
+
+
