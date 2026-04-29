@@ -25,16 +25,6 @@ transformation:
         targetcol: 'Exited'
   
   transform_steps:
-    - name: encode_category
-      params:
-        mappings:
-          Gender:
-            Male: 1
-            Female: 0
-          Geography:
-            France: 0
-            Germany: 1
-            Spain: 2
     - name: fix_outliers
       params:
         numcols: ['Balance','EstimatedSalary']
@@ -59,5 +49,24 @@ eda:
         catcols: ['Geography','Gender']
         tgtcol: 'Exited'
         base_folder: 'C:\\Aditya\\ML_Practice\\ML_Projects\\Customer_Churn_Model_ANN\\artifacts'
+training:
+  problem_type: 'Classification'
+  target_column: 'Exited'
 
+  train_test_split: 
+    test_size: 0.2
+    random_state: 42
 
+  preprocessing:
+    steps:
+      - transformer: StandardScaler
+        columns: ['CreditScore','Balance','EstimatedSalary']
+        params: {}
+
+      - transformer: OneHotEncoder
+        columns: ['Geography','Gender']
+        params:
+          handle_unknown: 'ignore'
+    
+    file_name: ColumnTransformer
+    file_path: "C:\\Aditya\\ML_Practice\\ML_Projects\\Customer_Churn_Model_ANN\\artifacts"

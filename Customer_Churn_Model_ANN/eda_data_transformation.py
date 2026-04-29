@@ -270,7 +270,6 @@ class EDA:
 
     def cat_dist_plot(self,base_folder:str = None,catcols:list = None):
         try:
-            print(base_folder)
             logging.info('----------------------------------------------------------------------------------------------------------')
             logging.info(f'Plotting the categorical distribution of {catcols}. The plots will be available in path {base_folder}')
             logging.info('----------------------------------------------------------------------------------------------------------')
