@@ -67,6 +67,13 @@ training:
         columns: ['Geography','Gender']
         params:
           handle_unknown: 'ignore'
-    
-    file_name: ColumnTransformer
-    file_path: "C:\\Aditya\\ML_Practice\\ML_Projects\\Customer_Churn_Model_ANN\\artifacts"
+  
+  model:
+    params:
+      hidden_activation: relu
+      output_activation: sigmoid
+      hidden_nodes: 64
+      output_nodes: 1
+  
+  model_output:
+    base_dir : "C:\\Aditya\\ML_Practice\\ML_Projects\\Customer_Churn_Model_ANN\\models"

@@ -12,6 +12,10 @@ import pandas as pd
 from Customer_Churn_Model_ANN.transformer_factory import Transformer_Factory
 from sklearn.model_selection import train_test_split
 from sklearn.compose import ColumnTransformer
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.callbacks import EarlyStopping,TensorBoard
 import pickle
 
 class Model_Trainer:
@@ -25,7 +29,10 @@ class Model_Trainer:
             self.target_col = self.config.get("training","target_column")
 
             self.split_config = self.config.get("training","train_test_split")
-            self.transform_steps = self.config.get("training","preprocessing")
+            self.preprocessing_config = self.config.get("training","preprocessing")
+            self.output_config = self.config.get("training","model_output")
+
+            self.model_config = self.config.get("training","model")
 
         except Exception as e:
             raise CustomException(e,sys)
@@ -38,9 +45,21 @@ class Model_Trainer:
             X_test_transformed = self.__transform_preprocess(X_test,preprocessor)
             self.__dump_model(
                 preprocessor,
-                file_path=self.transform_steps.get('file_path'),
-                file_name=self.transform_steps.get('file_name')
+                file_path=self.output_config.get('base_dir'),
+                file_name='preprocessor'
                 )
+            model_params = self.model_config.get('params',{})
+            hidden_activation = model_params.get('hidden_activation')
+            output_activation = model_params.get('output_activation')
+            hidden_nodes = model_params.get('hidden_nodes')
+            output_nodes = model_params.get('output_nodes')
+            self.__build_model(
+                hidden_activation=hidden_activation,
+                output_activation=output_activation,
+                inp_shape=X_train_transformed.shape[1],
+                hidden_nodes=hidden_nodes,
+                output_nodes=output_nodes
+            )
         except Exception as e:
             raise CustomException(e,sys)
             
@@ -92,7 +111,7 @@ class Model_Trainer:
 
     def __fit_transform_preprocess(self,X_train:object = None):
         try:
-            transform_steps = self.transform_steps.get('steps')
+            transform_steps = self.preprocessing_config.get('steps')
             logging.info('__________________________________________')
             logging.info('Fitting and Transforming on the Train Data')
             logging.info('__________________________________________')
@@ -130,5 +149,19 @@ class Model_Trainer:
             logging.info('____________________________________________________________')
             logging.info(f'Pickle file has been generated and available at {file_path}')
             logging.info('____________________________________________________________')
+        except Exception as e:
+            raise CustomException(e,sys)
+        
+    def __build_model(self,hidden_activation:str = None,output_activation:str = None,inp_shape:int = None,hidden_nodes:int = None,output_nodes:int = None):
+        try:
+            if hidden_activation is None or output_activation is None or inp_shape is None or hidden_nodes is None or output_nodes is None:
+                raise ValueError("Missing Parameters to build the Nueral Network." \
+                "Check the input parameters:hidden_activation,output_activation,inp_shape,hidden_nodes,output_nodes")
+            model = Sequential([
+                Dense(hidden_nodes,activation=hidden_activation,input_shape=(inp_shape,)), ##Hidden Layer 1 Connected with input Layer
+                Dense(int(hidden_nodes/2),activation=hidden_activation), ##Hidden Layer 2 
+                Dense(output_nodes,activation=output_activation)
+            ])
+            print(model.summary())
         except Exception as e:
             raise CustomException(e,sys)
