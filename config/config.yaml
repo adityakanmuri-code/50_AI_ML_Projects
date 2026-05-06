@@ -49,6 +49,7 @@ eda:
         catcols: ['Geography','Gender']
         tgtcol: 'Exited'
         base_folder: 'C:\\Aditya\\ML_Practice\\ML_Projects\\Customer_Churn_Model_ANN\\artifacts'
+
 training:
   problem_type: 'Classification'
   target_column: 'Exited'
@@ -69,11 +70,37 @@ training:
           handle_unknown: 'ignore'
   
   model:
+    name: 'ann'
     params:
       hidden_activation: relu
       output_activation: sigmoid
       hidden_nodes: 64
       output_nodes: 1
+    compile:
+      optimizer: 
+        name: adam
+        params:
+          learning_rate: 0.01
+      
+      loss: binary_crossentropy
+
+      metrics:
+        - accuracy
+    
+      callbacks:
+        - name : TensorBoard
+          params:
+            histogram_freq: 10
+        - name : EarlyStopping
+          params: 
+            monitor: val_loss
+            patience: 7
+            restore_best_weights: True
+    fit:
+      epochs: 100  
+    
   
   model_output:
     base_dir : "C:\\Aditya\\ML_Practice\\ML_Projects\\Customer_Churn_Model_ANN\\models"
+    model_logs : "C:\\Aditya\\ML_Practice\\ML_Projects\\Customer_Churn_Model_ANN\\models\\model_logs\\fit"
+    extension : h5

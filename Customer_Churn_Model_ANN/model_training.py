@@ -12,7 +12,7 @@ import pandas as pd
 from Customer_Churn_Model_ANN.transformer_factory import Transformer_Factory
 from sklearn.model_selection import train_test_split
 from sklearn.compose import ColumnTransformer
-import tensorflow as tf
+import tensorflow
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.callbacks import EarlyStopping,TensorBoard
@@ -33,6 +33,8 @@ class Model_Trainer:
             self.output_config = self.config.get("training","model_output")
 
             self.model_config = self.config.get("training","model")
+            self.compile_config = self.model_config.get("compile",{})
+            self.callbacks_config = self.compile_config.get("callbacks",[])
 
         except Exception as e:
             raise CustomException(e,sys)
@@ -48,21 +50,54 @@ class Model_Trainer:
                 file_path=self.output_config.get('base_dir'),
                 file_name='preprocessor'
                 )
-            model_params = self.model_config.get('params',{})
-            hidden_activation = model_params.get('hidden_activation')
-            output_activation = model_params.get('output_activation')
-            hidden_nodes = model_params.get('hidden_nodes')
-            output_nodes = model_params.get('output_nodes')
-            self.__build_model(
-                hidden_activation=hidden_activation,
-                output_activation=output_activation,
-                inp_shape=X_train_transformed.shape[1],
-                hidden_nodes=hidden_nodes,
-                output_nodes=output_nodes
+            ann_model = self.__fit_model(X_train=X_train_transformed,X_test=X_test_transformed,y_train=y_train,y_test=y_test)
+            model_output_path = self.output_config.get("base_dir")
+            model_extension = self.output_config.get("extension")
+            self.__dump_model(
+                model= ann_model,
+                file_path= model_output_path,
+                file_name= 'dl_model',
+                extension= model_extension
             )
+
+            tensorboard_path = self.output_config.get("model_logs")
+
         except Exception as e:
             raise CustomException(e,sys)
-            
+    
+    def __get_optimizer(self,name,params):
+        try:
+            optimizers = {
+                "adam" : tensorflow.keras.optimizers.Adam,
+                "sgd" : tensorflow.keras.optimizers.SGD,
+                "rmsprop" : tensorflow.keras.optimizers.RMSprop
+            }
+
+            if name not in optimizers:
+                raise ValueError(f'Invalid Optimizer Name {name}')
+                logging.info(f'ERROR : Invalid Optimizer Name {name}')
+
+            return optimizers[name](**params)
+        except Exception as e:
+            raise CustomException(e,sys)
+        
+    def __get_losses(self,name):
+        try:
+            loss = {
+                'binary_crossentropy' : tensorflow.keras.losses.BinaryCrossentropy,
+                'categorical_crossentropy' : tensorflow.keras.losses.CategoricalCrossentropy,
+                'mse' : tensorflow.keras.losses.MeanSquaredError,
+                'huber' : tensorflow.keras.losses.Huber
+            }
+
+            if name not in loss:
+                raise ValueError(f'Loss function name {name} is not found')
+                logging.info(f'ERROR : Loss function name {name} is not found')
+
+            return loss[name]()
+        except Exception as e:
+            raise CustomException(e,sys)
+
     def __split_train_test_data(self,dataframe:pd.DataFrame = None,target_col:str = None):
         try:
             test_size = self.split_config.get("test_size",0.2)
@@ -137,13 +172,16 @@ class Model_Trainer:
         except Exception as e:
             raise CustomException(e,sys)
 
-    def __dump_model(self,model:object = None,file_path:str = None,file_name:str = None):
+    def __dump_model(self,model:object = None,file_path:str = None,file_name:str = None,extension:object = None):
         try:
             logging.info('___________________________________________')
             logging.info(f'Generating the pickle file for {file_name}')
             logging.info('___________________________________________')
             os.makedirs(file_path,exist_ok=True)
-            file_path = os.path.join(file_path,f'{file_name}.pkl')
+            if extension is None:
+                file_path = os.path.join(file_path,f'{file_name}.pkl')
+            else:
+                file_path = os.path.join(file_path,f'{file_name}.{extension}')
             with open(file_path,'wb') as f:
                 pickle.dump(model,f)
             logging.info('____________________________________________________________')
@@ -152,7 +190,7 @@ class Model_Trainer:
         except Exception as e:
             raise CustomException(e,sys)
         
-    def __build_model(self,hidden_activation:str = None,output_activation:str = None,inp_shape:int = None,hidden_nodes:int = None,output_nodes:int = None):
+    def __build_model(self,hidden_activation:str = None,output_activation:str = None,inp_shape:int = None,hidden_nodes:int = None,output_nodes:int = None,optimizers:object = None,loss:object = None,metrics=None):
         try:
             if hidden_activation is None or output_activation is None or inp_shape is None or hidden_nodes is None or output_nodes is None:
                 raise ValueError("Missing Parameters to build the Nueral Network." \
@@ -162,6 +200,71 @@ class Model_Trainer:
                 Dense(int(hidden_nodes/2),activation=hidden_activation), ##Hidden Layer 2 
                 Dense(output_nodes,activation=output_activation)
             ])
-            print(model.summary())
+            
+            model.compile(optimizer=optimizers,loss=loss,metrics=metrics)
+            return model
+        except Exception as e:
+            raise CustomException(e,sys)
+        
+    def __initiate_callbacks(self):
+        try:       
+            callbacks = []
+            log_path = self.output_config.get('model_logs')
+            for cb in self.callbacks_config:
+                name = cb.get("name")
+                params = cb.get("params")
+                if name == 'TensorBoard':
+                    file_path = os.path.join(log_path,datetime.now().strftime("%d_%m_%Y_%H_%M_%S"))
+                    os.makedirs(file_path,exist_ok=True)
+                    callbacks.append(
+                        TensorBoard(log_dir=file_path,**params)
+                    )
+                elif name == 'EarlyStopping':
+                    callbacks.append(
+                        EarlyStopping(**params)
+                    )
+            return callbacks    
+        except Exception as e:
+            raise CustomException(e,sys)
+        
+    def __fit_model(self,X_train,X_test,y_train,y_test):
+        try:
+            #Building and Compiling the model
+            model_params = self.model_config.get('params',{})
+            hidden_activation = model_params.get('hidden_activation')
+            output_activation = model_params.get('output_activation')
+            hidden_nodes = model_params.get('hidden_nodes')
+            output_nodes = model_params.get('output_nodes')
+            compile_config = self.compile_config
+            optimizer_config = compile_config.get('optimizer',{})
+            optimizer = self.__get_optimizer(optimizer_config.get("name"),optimizer_config.get('params',{}))
+            loss = self.__get_losses(compile_config.get('loss'))
+            metrics = compile_config.get('metrics',[])
+            
+            fit_config = self.model_config.get("fit",{})
+            epochs = fit_config.get("epochs")
+
+            model = self.__build_model(
+                hidden_activation=hidden_activation,
+                output_activation=output_activation,
+                inp_shape=X_train.shape[1],
+                hidden_nodes=hidden_nodes,
+                output_nodes=output_nodes,
+                optimizers = optimizer,
+                loss = loss,
+                metrics = metrics
+            )
+            #Initiate Callbacks
+            callbacks = self.__initiate_callbacks()
+            
+            #Model Training
+            history = model.fit(
+                X_train,y_train,
+                validation_data = (X_test,y_test),epochs = epochs,
+                callbacks = callbacks
+            )
+
+            return model
+
         except Exception as e:
             raise CustomException(e,sys)
