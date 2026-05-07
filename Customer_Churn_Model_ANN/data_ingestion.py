@@ -8,15 +8,14 @@ from config.configuration import Config
 
 class DataIngestion:
 
-    def __init__(self):
-        self.config = Config()
-
-        #Load config values
-        self.source_type = self.config.get("data","source_type")
-        self.file_path = self.config.get("data","file_path")
-
+    def __init__(self,data_type = 'train'):
         try:
-            self.read_params = self.config.get("data","read_params")
+            self.config = Config()
+
+            #Load config values
+            self.source_type = self.config.get("data",data_type,"source_type")
+            self.file_path = self.config.get("data",data_type,"file_path")
+            self.read_params = self.config.get("data",data_type,"read_params")
         except:
             self.read_params = {}
         

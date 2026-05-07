@@ -9,6 +9,8 @@ warnings.filterwarnings('ignore')
 from config.configuration import Config
 
 import pandas as pd
+import numpy as np
+import random
 from Customer_Churn_Model_ANN.transformer_factory import Transformer_Factory
 from sklearn.model_selection import train_test_split
 from sklearn.compose import ColumnTransformer
@@ -33,6 +35,7 @@ class Model_Trainer:
             self.output_config = self.config.get("training","model_output")
 
             self.model_config = self.config.get("training","model")
+            self.random_seed = self.model_config.get("random_seed")
             self.compile_config = self.model_config.get("compile",{})
             self.callbacks_config = self.compile_config.get("callbacks",[])
 
@@ -43,16 +46,19 @@ class Model_Trainer:
         try:
             X_train,X_test,y_train,y_test = self.__split_train_test_data(self.dataframe,self.target_col)
             X_train_transformed,preprocessor = self.__fit_transform_preprocess(X_train)
-            feature_names = preprocessor.get_feature_names_out()
+
             X_test_transformed = self.__transform_preprocess(X_test,preprocessor)
             self.__dump_model(
                 preprocessor,
                 file_path=self.output_config.get('base_dir'),
                 file_name='preprocessor'
                 )
+            
+            tensorflow.keras.utils.set_random_seed(self.random_seed)
             ann_model = self.__fit_model(X_train=X_train_transformed,X_test=X_test_transformed,y_train=y_train,y_test=y_test)
             model_output_path = self.output_config.get("base_dir")
             model_extension = self.output_config.get("extension")
+
             self.__dump_model(
                 model= ann_model,
                 file_path= model_output_path,
@@ -180,10 +186,11 @@ class Model_Trainer:
             os.makedirs(file_path,exist_ok=True)
             if extension is None:
                 file_path = os.path.join(file_path,f'{file_name}.pkl')
+                with open(file_path,'wb') as f:
+                    pickle.dump(model,f)
             else:
                 file_path = os.path.join(file_path,f'{file_name}.{extension}')
-            with open(file_path,'wb') as f:
-                pickle.dump(model,f)
+                model.save(file_path)
             logging.info('____________________________________________________________')
             logging.info(f'Pickle file has been generated and available at {file_path}')
             logging.info('____________________________________________________________')

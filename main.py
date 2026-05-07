@@ -3,9 +3,10 @@ import logger
 from Customer_Churn_Model_ANN.data_ingestion import DataIngestion
 from Customer_Churn_Model_ANN.eda_data_transformation import CleanData,EDA
 from Customer_Churn_Model_ANN.model_training import Model_Trainer
+from Customer_Churn_Model_ANN.model_prediction import Prediction
 
 def main():
-    ingestion = DataIngestion()
+    ingestion = DataIngestion(data_type='train')
     df = ingestion.ingest_data()
 
     #print(df.head())
@@ -21,6 +22,8 @@ def main():
     trainer = Model_Trainer(df)
     trainer.model_trainer()
 
+    predict = Prediction()
+    predict.predict_data()
 
 if __name__ == "__main__":
     main()

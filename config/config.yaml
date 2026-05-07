@@ -8,11 +8,19 @@ logging:
   log_format: '[%(asctime)s] %(lineno)d %(name)s - %(levelname)s - %(message)s'
 
 data:
-  source_type: "file"
-  file_path: "C:\\Aditya\\ML_Practice\\ML_Projects\\Customer_Churn_Model_ANN\\datasets\\Churn_Modelling_train.csv"
-  file_format: "csv"
-  read_params:
-    encoding: "utf-8"
+  train:
+    source_type: file
+    file_path: "C:\\Aditya\\ML_Practice\\ML_Projects\\Customer_Churn_Model_ANN\\datasets\\Churn_Modelling_train.csv"
+    file_format: "csv"
+    read_params:
+      encoding: "utf-8"
+  
+  predict:
+    source_type: file
+    file_path : "C:\\Aditya\\ML_Practice\\ML_Projects\\Customer_Churn_Model_ANN\\datasets\\Churn_Modelling_test.csv"
+    file_format: csv
+    read_params:
+      encoding: utf-8
 
 transformation:
   clean_steps:
@@ -71,10 +79,11 @@ training:
   
   model:
     name: 'ann'
+    random_seed: 43
     params:
       hidden_activation: relu
       output_activation: sigmoid
-      hidden_nodes: 64
+      hidden_nodes: 32
       output_nodes: 1
     compile:
       optimizer: 
@@ -94,7 +103,7 @@ training:
         - name : EarlyStopping
           params: 
             monitor: val_loss
-            patience: 7
+            patience: 10
             restore_best_weights: True
     fit:
       epochs: 100  
