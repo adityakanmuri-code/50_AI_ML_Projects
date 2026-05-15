@@ -8,3 +8,4 @@ tensorboard
 matplotlib
 pyyaml
 seaborn
+keras-tuner

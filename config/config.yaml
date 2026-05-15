@@ -80,22 +80,17 @@ training:
   model:
     name: 'ann'
     random_seed: 43
-    params:
-      hidden_activation: relu
-      output_activation: sigmoid
-      hidden_nodes: 32
-      output_nodes: 1
     compile:
       optimizer: 
         name: adam
         params:
-          learning_rate: 0.01
-      
+          learning_rate:
+            - 0.1
+            - 0.01
+            - 0.001
       loss: binary_crossentropy
-
       metrics:
-        - accuracy
-    
+        - accuracy    
       callbacks:
         - name : TensorBoard
           params:
@@ -103,12 +98,29 @@ training:
         - name : EarlyStopping
           params: 
             monitor: val_loss
-            patience: 10
+            patience: 5
             restore_best_weights: True
-    fit:
-      epochs: 100  
-    
-  
+    hyperparameters:
+      params:
+        directory: "C:\\Aditya\\ML_Projects\\Customer_Churn_Model_ANN"
+        project: hyperparameters
+        max_trials: 5
+        executions_per_trial: 3
+        overwrite: True
+        objective: val_accuracy
+        seed: 43
+        epochs: 50
+        layers:
+          min_layers : 2
+          max_layers : 5
+        nuerons:
+          min_value: 32
+          max_value: 128
+          step: 32
+          output_nodes: 1
+        activation: 
+          hidden_activation: relu
+          output_activation: sigmoid
   model_output:
     base_dir : "C:\\Aditya\\ML_Practice\\ML_Projects\\Customer_Churn_Model_ANN\\models"
     model_logs : "C:\\Aditya\\ML_Practice\\ML_Projects\\Customer_Churn_Model_ANN\\models\\model_logs\\fit"

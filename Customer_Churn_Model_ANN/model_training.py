@@ -15,8 +15,10 @@ from Customer_Churn_Model_ANN.transformer_factory import Transformer_Factory
 from sklearn.model_selection import train_test_split
 from sklearn.compose import ColumnTransformer
 import tensorflow
+from tensorflow import keras
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
+from keras_tuner import RandomSearch
 from tensorflow.keras.callbacks import EarlyStopping,TensorBoard
 import pickle
 
@@ -38,6 +40,7 @@ class Model_Trainer:
             self.random_seed = self.model_config.get("random_seed")
             self.compile_config = self.model_config.get("compile",{})
             self.callbacks_config = self.compile_config.get("callbacks",[])
+            self.hyperparams_config = self.config.get("training","model","hyperparameters")
 
         except Exception as e:
             raise CustomException(e,sys)
@@ -196,23 +199,7 @@ class Model_Trainer:
             logging.info('____________________________________________________________')
         except Exception as e:
             raise CustomException(e,sys)
-        
-    def __build_model(self,hidden_activation:str = None,output_activation:str = None,inp_shape:int = None,hidden_nodes:int = None,output_nodes:int = None,optimizers:object = None,loss:object = None,metrics=None):
-        try:
-            if hidden_activation is None or output_activation is None or inp_shape is None or hidden_nodes is None or output_nodes is None:
-                raise ValueError("Missing Parameters to build the Nueral Network." \
-                "Check the input parameters:hidden_activation,output_activation,inp_shape,hidden_nodes,output_nodes")
-            model = Sequential([
-                Dense(hidden_nodes,activation=hidden_activation,input_shape=(inp_shape,)), ##Hidden Layer 1 Connected with input Layer
-                Dense(int(hidden_nodes/2),activation=hidden_activation), ##Hidden Layer 2 
-                Dense(output_nodes,activation=output_activation)
-            ])
-            
-            model.compile(optimizer=optimizers,loss=loss,metrics=metrics)
-            return model
-        except Exception as e:
-            raise CustomException(e,sys)
-        
+                
     def __initiate_callbacks(self):
         try:       
             callbacks = []
@@ -233,45 +220,66 @@ class Model_Trainer:
             return callbacks    
         except Exception as e:
             raise CustomException(e,sys)
-        
-    def __fit_model(self,X_train,X_test,y_train,y_test):
+
+    def __fit_model(self,X_train,y_train,X_test,y_test):
         try:
-            #Building and Compiling the model
-            model_params = self.model_config.get('params',{})
-            hidden_activation = model_params.get('hidden_activation')
-            output_activation = model_params.get('output_activation')
-            hidden_nodes = model_params.get('hidden_nodes')
-            output_nodes = model_params.get('output_nodes')
-            compile_config = self.compile_config
-            optimizer_config = compile_config.get('optimizer',{})
-            optimizer = self.__get_optimizer(optimizer_config.get("name"),optimizer_config.get('params',{}))
-            loss = self.__get_losses(compile_config.get('loss'))
-            metrics = compile_config.get('metrics',[])
-            
-            fit_config = self.model_config.get("fit",{})
-            epochs = fit_config.get("epochs")
-
-            model = self.__build_model(
-                hidden_activation=hidden_activation,
-                output_activation=output_activation,
-                inp_shape=X_train.shape[1],
-                hidden_nodes=hidden_nodes,
-                output_nodes=output_nodes,
-                optimizers = optimizer,
-                loss = loss,
-                metrics = metrics
+            early_stopping = self.__initiate_callbacks()
+            params_config = self.hyperparams_config.get("params",{})
+            tuner = RandomSearch(
+                hypermodel = lambda hp : self.__build_model(hp,X_train,params_config),
+                objective = params_config.get('objective'),
+                max_trials=params_config.get('max_trials'),
+                executions_per_trial = params_config.get('executions_per_trial'),
+                seed= params_config.get('seed'),
+                overwrite = True,
+                directory = "C:\\Aditya\\ML_Projects\\Customer_Churn_Model_ANN",
+                project_name = 'hyperparameters'
             )
-            #Initiate Callbacks
-            callbacks = self.__initiate_callbacks()
-            
-            #Model Training
-            history = model.fit(
+            tuner.search(
                 X_train,y_train,
-                validation_data = (X_test,y_test),epochs = epochs,
-                callbacks = callbacks
+                epochs = params_config.get('epochs'),
+                validation_data = (X_test,y_test),
+                callbacks = early_stopping
             )
-
-            return model
-
+            best_model = tuner.get_best_models(num_models=1)[0]
+            best_parameters = tuner.get_best_hyperparameters(num_trials=1)[0]
+            print("Best Number of Layers : ", best_parameters.get('num_layers'))
+            for i in range(best_parameters.get('num_layers')):
+                print(
+                        f"Units in Layer {i+1} : ",
+                        best_parameters.get(f'units_{i}')
+                    )
+            print(
+                    "Best Learning Rate : ",
+                    best_parameters.get('learning_rate')
+                )
+            return best_model
+        except Exception as e:
+            raise CustomException(e,sys)
+    
+    def __build_model(self,hp,X_train,params_config):
+        try:
+                layers = params_config.get('layers',[])
+                nuerons = params_config.get('nuerons',[])
+                activation = params_config.get('activation',[])
+                optimizer_config = self.compile_config.get('optimizer')
+                learning_rate = hp.Choice('learning_rate',optimizer_config.get('params',{}).get('learning_rate',[]))
+                optimizer = self.__get_optimizer(optimizer_config.get('name'),{'learning_rate' : learning_rate})
+                loss = self.__get_losses(self.compile_config.get('loss')) 
+                metrics = self.compile_config.get('metrics',[])
+                model = keras.Sequential()
+                #Input Layer
+                model.add(
+                    keras.Input(shape=(X_train.shape[1],))
+                )
+                for i in range(hp.Int('num_layers',layers.get('min_layers'),layers.get('max_layers'))):
+                    model.add(Dense(units=hp.Int('units_'+str(i),min_value=nuerons.get('min_value'),max_value=nuerons.get('max_value'),step=nuerons.get('step')),activation=activation.get('hidden_activation')))
+                model.add(Dense(nuerons.get('output_nodes'),activation=activation.get('output_activation')))
+                model.compile(
+                    optimizer = optimizer,
+                    loss = loss,
+                    metrics = metrics
+                )
+                return model
         except Exception as e:
             raise CustomException(e,sys)
