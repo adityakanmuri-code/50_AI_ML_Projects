@@ -2,7 +2,8 @@ import yaml
 import os
 
 class Config:
-    def __init__(self,config_path="config/config.yaml"):
+    def __init__(self):
+        config_path = os.path.join(os.getcwd(),"Customer_Churn_Model_ANN\\config\\config.yaml")
         with open(config_path,"r") as file:
             self.config =yaml.safe_load(file)
     

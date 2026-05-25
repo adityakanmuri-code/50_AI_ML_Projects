@@ -1,10 +1,10 @@
 import os
 import sys
-from exception import CustomException
-import logger
+from Customer_Churn_Model_ANN.exception import CustomException
+import Customer_Churn_Model_ANN.logger as logger
 import logging
 import pandas as pd
-from config.configuration import Config
+from Customer_Churn_Model_ANN.config.configuration import Config
 
 class DataIngestion:
 

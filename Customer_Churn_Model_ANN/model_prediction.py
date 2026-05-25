@@ -1,12 +1,12 @@
 import os
 import sys
-from exception import CustomException
-import logger
+from Customer_Churn_Model_ANN.exception import CustomException
+import Customer_Churn_Model_ANN.logger as logger
 import logging
 from datetime import datetime
 import warnings
 warnings.filterwarnings('ignore')
-from config.configuration import Config
+from Customer_Churn_Model_ANN.config.configuration import Config
 import pickle
 import tensorflow
 from sklearn.metrics import accuracy_score

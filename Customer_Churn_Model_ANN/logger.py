@@ -1,7 +1,7 @@
 import logging
 import os
 from datetime import datetime
-from config.configuration import Config
+from Customer_Churn_Model_ANN.config.configuration import Config
 
 config = Config()
 

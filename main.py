@@ -1,4 +1,4 @@
-import logger
+import Customer_Churn_Model_ANN.logger as logger
 
 from Customer_Churn_Model_ANN.data_ingestion import DataIngestion
 from Customer_Churn_Model_ANN.eda_data_transformation import CleanData,EDA

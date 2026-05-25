@@ -1,7 +1,7 @@
 import os
 import sys
-from exception import CustomException
-import logger
+from Customer_Churn_Model_ANN.exception import CustomException
+import Customer_Churn_Model_ANN.logger as logger
 import logging
 from datetime import datetime
 import warnings

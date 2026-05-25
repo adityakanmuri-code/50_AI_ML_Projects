@@ -102,14 +102,14 @@ training:
             restore_best_weights: True
     hyperparameters:
       params:
-        directory: "C:\\Aditya\\ML_Projects\\Customer_Churn_Model_ANN"
+        directory: "C:/Aditya/ML_Practice/ML_Projects/Customer_Churn_Model_ANN/models"
         project: hyperparameters
         max_trials: 5
         executions_per_trial: 3
         overwrite: True
         objective: val_accuracy
         seed: 43
-        epochs: 50
+        epochs: 100
         layers:
           min_layers : 2
           max_layers : 5

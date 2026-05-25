@@ -1,12 +1,12 @@
 import os
 import sys
-from exception import CustomException
-import logger
+from Customer_Churn_Model_ANN.exception import CustomException
+import Customer_Churn_Model_ANN.logger as logger
 import logging
 from datetime import datetime
 import warnings
 warnings.filterwarnings('ignore')
-from config.configuration import Config
+from Customer_Churn_Model_ANN.config.configuration import Config
 
 import pandas as pd
 import numpy as np
@@ -232,8 +232,8 @@ class Model_Trainer:
                 executions_per_trial = params_config.get('executions_per_trial'),
                 seed= params_config.get('seed'),
                 overwrite = True,
-                directory = "C:\\Aditya\\ML_Projects\\Customer_Churn_Model_ANN",
-                project_name = 'hyperparameters'
+                directory = params_config.get('directory'),
+                project_name = f'{params_config.get('project')}_{datetime.now().strftime('%d-%m-%Y_%H%M%S')}'
             )
             tuner.search(
                 X_train,y_train,
