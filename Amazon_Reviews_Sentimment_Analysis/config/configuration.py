@@ -1,0 +1,14 @@
+import yaml
+import os
+
+class Config:
+    def __init__(self):
+        config_path = os.path.join(os.getcwd(),"Amazon_Reviews_Sentimment_Analysis\\config\\config.yaml")
+        with open(config_path,"r") as file:
+            self.config =yaml.safe_load(file)
+    
+    def get(self,*keys):
+        value = self.config
+        for key in keys:
+            value = value[key]
+        return value

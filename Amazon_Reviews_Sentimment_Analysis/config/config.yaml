@@ -1,0 +1,8 @@
+project:
+    name: "Amazon_Reviews_Sentimment_Analysis"
+    base_dir: "C:\\Aditya\\ML_Practice\\ML_Projects"
+
+logging:
+  log_dir: "logs"
+  log_level: "INFO"
+  log_format: '[%(asctime)s] %(lineno)d %(name)s - %(levelname)s - %(message)s'
