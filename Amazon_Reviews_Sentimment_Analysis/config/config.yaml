@@ -6,3 +6,11 @@ logging:
   log_dir: "logs"
   log_level: "INFO"
   log_format: '[%(asctime)s] %(lineno)d %(name)s - %(levelname)s - %(message)s'
+
+data:
+    train:
+        source_type: file
+        file_name: C:\Aditya\ML_Practice\ML_Projects\Amazon_Reviews_Sentimment_Analysis\datasets\amazon_reviews.csv
+        file_extension: csv
+        read_params: 
+            encoding: 'utf-8'

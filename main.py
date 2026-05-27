@@ -1,9 +1,10 @@
-import Amazon_Reviews_Sentimment_Analysis.logger as logger
-import logging
+
+from Amazon_Reviews_Sentimment_Analysis.data_ingestion import DataIngestion
 
 
 def main():
-    logging.info("Amazon Reviews Check Pass")
+    ingestion = DataIngestion(data_type='train')
+    senti_df = ingestion.ingest_data()
 
 if __name__ == "__main__":
     main()
