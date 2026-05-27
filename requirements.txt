@@ -10,3 +10,6 @@ pyyaml
 seaborn
 keras-tuner
 gensim
+nltk
+beautifulsoup4
+emoji

@@ -14,3 +14,22 @@ data:
         file_extension: csv
         read_params: 
             encoding: 'utf-8'
+
+transformation:
+    clean_steps:
+        - name: drop_unwanted_cols
+          params: 
+            drop_col: ['Unnamed: 0','reviewerName','reviewTime','day_diff','helpful_yes','helpful_no','total_vote','score_pos_neg_diff','score_average_rating', 'wilson_lower_bound']
+        - name: fill_na
+          params:
+            targetcol: 'overall'
+    transform_steps:
+        - name: features_setting
+          params:
+            mappings:
+                overall:
+                    threshold: 3
+                    positive_value: 1
+                    negative_value: 0
+                    operator: ">"
+
