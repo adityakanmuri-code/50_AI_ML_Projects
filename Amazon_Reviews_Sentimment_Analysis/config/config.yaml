@@ -32,4 +32,12 @@ transformation:
                     positive_value: 1
                     negative_value: 0
                     operator: ">"
-
+    text_preprocessing:
+      preprocess_steps:
+        - name: lower_text
+          params: 
+            col: reviewText
+        - name: remove_special_characters
+          params:
+            col: reviewText
+            search_pattern: "[^a-zA-z0-9]"
