@@ -41,3 +41,30 @@ transformation:
           params:
             col: reviewText
             search_pattern: "[^a-zA-z0-9]"
+        - name: remove_white_spaces
+          params:
+            col: reviewText
+            search_pattern: r"\s+""
+        - name: handling_negations
+          params:
+            col: reviewText
+            search_pattern: r"\bnot\s+(\w+)"
+            replace_pattern: r"not_\1"
+        - name: removing_emoji
+          params:
+            col: reviewText
+        - name: removing_short_words
+          params:
+            col: reviewText
+            word_length: 2
+        - name: handling_url
+          params:
+            col: reviewText
+            url_pattern: r"https\S+|www\S+"
+            html_pattern: r"<.*?>"
+training:
+  type: Classification
+  targetcol: overall
+
+  tokenize:
+    stop_words : english

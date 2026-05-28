@@ -13,6 +13,6 @@ def main():
     senti_df = cleaner.transform_data(senti_df)
 
     text_preprocess = Text_Preprocessing()
-    text_preprocess.preprocess_text(senti_df)
+    senti_df = text_preprocess.preprocess_text(senti_df)
 if __name__ == "__main__":
     main()
