@@ -13,3 +13,4 @@ gensim
 nltk
 beautifulsoup4
 emoji
+imblearn

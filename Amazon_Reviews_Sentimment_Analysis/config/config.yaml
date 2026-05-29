@@ -63,8 +63,22 @@ transformation:
             url_pattern: r"https\S+|www\S+"
             html_pattern: r"<.*?>"
 training:
-  type: Classification
-  targetcol: overall
+  problem_type: Classification
+  target_column: overall
 
   tokenize:
     stop_words : english
+
+  embeddings:
+    vector_size : 300
+    epochs : 15
+    window : 9
+  
+  split:
+    test_size : 0.2
+    random_state : 43
+  
+  model_output:
+    model_dir : "C:\\Aditya\\ML_Practice\\ML_Projects\\Amazon_Reviews_Sentimment_Analysis\\models"
+    embed_extension: model
+    model_extension: pkl

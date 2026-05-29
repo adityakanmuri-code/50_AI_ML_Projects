@@ -7,6 +7,7 @@ import warnings
 warnings.filterwarnings('ignore')
 from Amazon_Reviews_Sentimment_Analysis.config.configuration import Config
 
+import numpy as np
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
@@ -115,19 +116,18 @@ class Tokenize:
         self.config = Config()
         self.tokenize = self.config.get('training','tokenize')
 
-    def tokenize_corpus(self,dataframe:pd.DataFrame = None,col:str = None):
+    def _tokenize_corpus(self,X_train:object = None):
         try:
             logging.info('_____________________')
             logging.info('Tokenizing the corpus')
             logging.info('_____________________')
-            documents = dataframe[col].tolist()
+            documents = X_train.tolist()
             stop_words = stopwords.words(self.tokenize.get('stop_words'))
             corpus = []
             lemma = WordNetLemmatizer()
             for i in range(len(documents)):
                 documents[i] = word_tokenize(documents[i])
                 documents[i] = [lemma.lemmatize(word) for word in documents[i] if word not in stop_words]
-                documents[i] = ' '.join(documents[i])
                 corpus.append(documents[i])
             logging.info('________________________________________')
             logging.info('Tokenizing the corpus has been completed')
@@ -137,4 +137,45 @@ class Tokenize:
             raise CustomException(e,sys)
         
 class Embedding:
-    pass
+    def _train_generate_embeddings(self,X_train:object = None,vector_size:int = 0,epochs:int = 0,window:int = 0):
+        try:
+            logging.info("____________________________________________")
+            logging.info("Generating the embeddings for Word2Vec Model")
+            logging.info("____________________________________________")
+            word2vec_model = Word2Vec(X_train,vector_size=vector_size,epochs=epochs,window=window)
+            X_train_transformed = []
+            for i in range(len(X_train)):
+                tokens = X_train[i]
+                vectors = [word2vec_model.wv[word] for word in tokens if word in word2vec_model.wv.key_to_index]
+                if len(vectors) == 0:
+                    avg_vector = np.zeros(word2vec_model.vector_size)
+                else:
+                    avg_vector = np.mean(vectors,axis=0)
+                X_train_transformed.append(avg_vector)
+            logging.info("_______________________________________________________________")
+            logging.info("Generating the embeddings for Word2Vec Model has been completed")
+            logging.info("_______________________________________________________________")
+            return np.array(X_train_transformed),word2vec_model 
+        except Exception as e:
+            raise CustomException(e,sys)
+    
+    def _generate_embeddings(self,corpus:object = None,model:object = None):
+        try:
+            logging.info("____________________________________________")
+            logging.info("Generating embeddings using pretrained model")
+            logging.info("____________________________________________")
+            corpus_transformed = []
+            for i in range(len(corpus)):
+                tokens = corpus[i]
+                vectors = [model.wv[word] for word in tokens if word in model.wv]
+                if len(vectors) == 0:
+                    avg_vector = np.zeros(model.vector_size)
+                else:
+                    avg_vector = np.mean(vectors,axis=0)
+                corpus_transformed.append(avg_vector)
+            logging.info("_______________________________________________________________")
+            logging.info("Generating embeddings using pretrained model has been completed")
+            logging.info("_______________________________________________________________")
+            return corpus_transformed
+        except Exception as e:
+            raise CustomException(e,sys)
