@@ -8,6 +8,7 @@ import warnings
 warnings.filterwarnings('ignore')
 from Amazon_Reviews_Sentimment_Analysis.config.configuration import Config
 from Amazon_Reviews_Sentimment_Analysis.text_preprocessing import Embedding,Tokenize
+from Amazon_Reviews_Sentimment_Analysis.hyperparameter_tuning import Hyperparameter_Tuning
 from imblearn.over_sampling import RandomOverSampler
 
 import pandas as pd
@@ -18,7 +19,7 @@ import pickle
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.naive_bayes import GaussianNB,MultinomialNB
+from sklearn.naive_bayes import GaussianNB
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import LinearSVC
 from sklearn.metrics import accuracy_score,f1_score,precision_score,recall_score
@@ -29,6 +30,7 @@ class Model_Trainer:
         try:
             self.config = Config()
             self.embeddings = Embedding()
+            self.hyperparameters = Hyperparameter_Tuning()
             self.dataframe = dataframe
 
             self.problem_type = self.config.get("training","problem_type")
@@ -42,6 +44,7 @@ class Model_Trainer:
     
     def model_trainer(self):
         try:
+            best_score = -1
             X_train,X_test,y_train,y_test = self.__split_train_test_data(self.dataframe,self.target_col)
             #Before Tokenizing remember to convert the X_train from pd.DataFrame to pd.Series
             tokenizer = Tokenize()
@@ -53,8 +56,14 @@ class Model_Trainer:
             X_test = tokenizer._tokenize_corpus(X_test.iloc[:,0])
             X_test_transformed = self.__transform_preprocess(X_test,embed_model)
             #Training the model
-            model,model_name = self.__train_model(X_train_resampled,y_train_resampled,X_test_transformed,y_test)
-            self.__dump_model(model=model,file_path= self.model_ouput['model_dir'],file_name='predict_model',extension=self.model_ouput['model_extension'])
+            models = self.__train_model(X_train_resampled,y_train_resampled,X_test_transformed,y_test)
+            for item in models:
+                model = item['Model']
+                model,model_score = self.hyperparameters._hyperparameter_tuner(model,X_train_resampled,y_train_resampled)
+                if model_score > best_score:
+                    best_score = model_score
+                    best_model = model
+            self.__dump_model(model=best_model,file_path= self.model_ouput['model_dir'],file_name=f'{model.__class__.__name__}',extension=self.model_ouput['model_extension'])
         except Exception as e:
             raise CustomException(e,sys)
     
@@ -126,7 +135,7 @@ class Model_Trainer:
             logging.info("____________________________________")
             logging.info("Training the model on the train data")
             logging.info("____________________________________")
-            best_score = -1
+            model_scores = []
             models = {
                 'LogisticRegression' : LogisticRegression(),
                 'DecisionTreeClassifier' : DecisionTreeClassifier(),
@@ -136,15 +145,17 @@ class Model_Trainer:
             }
             for name,model in models.items():
                 model.fit(X_train,y_train)
-                scores = self.__model_eval(model,X_test,y_test)
-                if scores['F1_Score'] > best_score:
-                    best_model = model
-                    best_model_name = model.__class__.__name__
-                    best_score = scores['F1_Score']
+                model_scores.append(self.__model_eval(model,X_test,y_test))
+            model_scores = sorted(
+                model_scores,
+                key= lambda x : x['F1_Score'],
+                reverse = True
+            )
+            best_models = model_scores[:2]
             logging.info("_______________________________________________________")
             logging.info("Training the model on the train data has been completed")
             logging.info("_______________________________________________________")
-            return best_model,best_model_name
+            return best_models
         except Exception as e:
             raise CustomException(e,sys)
 
@@ -159,6 +170,7 @@ class Model_Trainer:
             logging.info(f'F1_Score : {f1_score(y_test,y_pred)}')
             logging.info("__________________________________________________")
             return{
+                'Model' : model,
                 'Model_Name': model.__class__.__name__,
                 'Accuracy': accuracy_score(y_test, y_pred),
                 'F1_Score': f1_score(y_test, y_pred,average='weighted'),
