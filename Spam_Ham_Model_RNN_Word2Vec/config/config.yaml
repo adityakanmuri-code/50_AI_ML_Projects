@@ -6,3 +6,11 @@ logging:
   log_dir: "logs"
   log_level: "INFO"
   log_format: '[%(asctime)s] %(lineno)d %(name)s - %(levelname)s - %(message)s'
+
+data:
+    train:
+        source_type: kaggle
+        dataset_path: "ssssws/spam-email-detection-dataset-clean-and-ml-ready"
+        download_path: "C:\\Aditya\\ML_Practice\\ML_Projects\\Spam_Ham_Model_RNN_Word2Vec\\datasets"
+        file_name: 'dataset.csv'
+
