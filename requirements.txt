@@ -14,3 +14,5 @@ nltk
 beautifulsoup4
 emoji
 imblearn
+kaggle
+python-dotenv

@@ -67,3 +67,7 @@ Thumbs.db
 build/
 dist/
 *.egg-info/
+# ==============================
+# Environment Valiables
+# ==============================
+.env
