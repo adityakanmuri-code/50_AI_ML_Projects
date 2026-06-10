@@ -14,3 +14,21 @@ data:
         download_path: "C:\\Aditya\\ML_Practice\\ML_Projects\\Spam_Ham_Model_RNN_Word2Vec\\datasets"
         file_name: 'dataset.csv'
 
+transformation:
+    clean_steps:
+        - name : drop_unwanted_columns
+          params:
+            collist : ['email_id']
+        - name : fill_na
+          params:
+            tgtcol : label 
+    text_preprocessing:
+        - name : lower_case
+          params : 
+            collist : ['subject','email_text']
+        - name : handle_emoji
+          params : 
+            collist : ['subject','email_text']
+        
+
+
