@@ -7,6 +7,7 @@ import logging
 from Spam_Ham_Model_RNN_Word2Vec.config.configuration import Config
 import emoji
 import pandas as pd
+import re
 
 class DataCleaning:
     
@@ -15,6 +16,7 @@ class DataCleaning:
             self.config = Config()
             self.clean_steps = self.config.get('transformation','clean_steps')
             self.text_preprocess_steps = self.config.get('transformation','text_preprocessing')
+            self.transform_steps = self.config.get('transformation','transform_steps')
         except Exception as e:
             raise CustomException(e,sys)
         
@@ -130,7 +132,83 @@ class DataCleaning:
         try:
             logging.info("Handling Emojis in the text")
             for col in collist:
-                dataframe[col] = dataframe[col].apply(lambda x : emoji.demojize(x))
+                dataframe[col] = dataframe[col].apply(lambda x : emoji.replace_emoji(x,replace=' '))
+            return dataframe
+        except Exception as e:
+            raise CustomException(e,sys)
+    
+    def handle_special_chars(self,dataframe:pd.DataFrame = None,collist:list = None,search_pattern:str = None):
+        try:
+            logging.info('Handling Special Characters')
+            for col in collist:
+                dataframe[col] = dataframe[col].apply(lambda x : re.sub(search_pattern,' ',str(x)))
+            return dataframe
+        except Exception as e:
+            raise CustomException(e,sys)
+    
+    def remove_white_spaces(self,dataframe:pd.DataFrame = None,collist:list = None,search_pattern:str = None):
+        try:
+            for col in collist:
+                logging.info(f"Removing the white spaces in the column : {col}")
+                dataframe[col] = dataframe[col].apply(
+                    lambda x : re.sub(search_pattern,' ',str(x))
+                )
+            return dataframe
+        except Exception as e:
+            raise CustomException(e,sys)
+    
+    def handling_shortwords(self,dataframe:pd.DataFrame = None,collist:list = None,word_length:int = 2):
+        try:
+            for col in collist:
+                logging.info(f'Removing shortwords in the column {col}')
+                dataframe[col] = dataframe[col].apply(
+                    lambda x : ' '.join([word for word in x.split() if len(word) > word_length])
+                )
+            return dataframe
+        except Exception as e:
+            raise CustomException(e,sys)
+        
+    def remove_business_prefix(self,dataframe:pd.DataFrame = None,collist:list = None,search_pattern:str= None):
+        try:
+            for col in collist:
+                logging.info(f'Removing Business Prefix from the {col}')
+                dataframe[col] = dataframe[col].apply(lambda x : re.sub(search_pattern,' ',str(x)))
+            return dataframe
+        except Exception as e:
+            raise CustomException(e,sys)
+    
+    def transform_data(self,dataframe:pd.DataFrame = None):
+        try:
+            if dataframe is None:
+                errormessage = f'ERROR : Data Frame is empty check the data source'
+                logging.info(errormessage)
+                raise CustomException(errormessage,sys)
+            logging.info("__________________________________________________________________________________________")
+            logging.info(f"Data Transformation Pipeline has been started with following steps {self.transform_steps}")
+            logging.info("__________________________________________________________________________________________")
+            for step in self.transform_steps:
+                step_name = step['name']
+                step_params = step['params']
+
+                if not hasattr(self,step_name):
+                    errormessage = f'ERROR : Invalid step name {step_name} in the available steps'
+                    logging.info(errormessage)
+                    raise AttributeError(errormessage,sys)
+                method = getattr(self,step_name)
+                dataframe = method(dataframe,**step_params)
+            logging.info("____________________________________________________________________________________________")
+            logging.info(f"Data Transformation Pipeline has been completed with following steps {self.transform_steps}")
+            logging.info("____________________________________________________________________________________________")
+            return dataframe
+        except Exception as e:
+            raise CustomException(e,sys)
+    
+    def merge_columns(self,dataframe:pd.DataFrame = None,column1:str = None,column2:str = None,target_col:str = None):
+        try:
+            logging.info(f"Merging the columns {column1} and {column2} into {target_col}")
+            dataframe[target_col] = dataframe[column1] + " " + dataframe[column2]
+            #Removing the columns that have been merged
+            dataframe = dataframe.drop(columns=[column1,column2],errors='ignore')
             return dataframe
         except Exception as e:
             raise CustomException(e,sys)

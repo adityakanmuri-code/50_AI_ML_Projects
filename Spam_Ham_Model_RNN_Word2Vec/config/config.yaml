@@ -29,6 +29,29 @@ transformation:
         - name : handle_emoji
           params : 
             collist : ['subject','email_text']
+        - name : handle_special_chars
+          params : 
+            collist : ['subject','email_text']
+            search_pattern : "[^a-zA-Z0-9]"
+        - name : remove_white_spaces
+          params : 
+            collist : ['subject','email_text']
+            search_pattern : r"\s+"
+        - name : handling_shortwords
+          params : 
+            collist : ['email_text']
+            word_length : 1
+        - name : remove_business_prefix
+          params :
+            collist : ['email_text']
+            search_pattern : r'^(project update|team sync|meeting|schedule|report|budget review)\s*-\s*'
+    transform_steps : 
+      - name : merge_columns
+        params : 
+          column1 : 'subject'
+          column2 : 'email_text'
+          target_col : 'text'
+
         
 
 

@@ -10,6 +10,7 @@ def main():
     cleaner = DataCleaning()
     spam_df = cleaner.clean_data(spam_df)
     spam_df = cleaner.text_preprocessing(spam_df)
+    spam_df = cleaner.transform_data(spam_df)
     print(spam_df.head())
     
 
