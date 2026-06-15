@@ -16,41 +16,74 @@ data:
 
 transformation:
     clean_steps:
-        - name : drop_unwanted_columns
-          params:
-            collist : ['email_id']
-        - name : fill_na
-          params:
-            tgtcol : label 
+      - name : drop_unwanted_columns
+        params:
+          collist : ['email_id','sender_email']
+      - name : fill_na
+        params:
+          tgtcol : label 
     text_preprocessing:
-        - name : lower_case
-          params : 
-            collist : ['subject','email_text']
-        - name : handle_emoji
-          params : 
-            collist : ['subject','email_text']
-        - name : handle_special_chars
-          params : 
-            collist : ['subject','email_text']
-            search_pattern : "[^a-zA-Z0-9]"
-        - name : remove_white_spaces
-          params : 
-            collist : ['subject','email_text']
-            search_pattern : r"\s+"
-        - name : handling_shortwords
-          params : 
-            collist : ['email_text']
-            word_length : 1
-        - name : remove_business_prefix
-          params :
-            collist : ['email_text']
-            search_pattern : r'^(project update|team sync|meeting|schedule|report|budget review)\s*-\s*'
+      - name : lower_case
+        params : 
+          collist : ['subject','email_text']
+      - name : handle_emoji
+        params : 
+          collist : ['subject','email_text']
+      - name : handle_special_chars
+        params : 
+          collist : ['subject','email_text']
+          search_pattern : "[^a-zA-Z0-9]"
+      - name : remove_white_spaces
+        params : 
+          collist : ['subject','email_text']
+          search_pattern : r"\s+"
+      - name : handling_shortwords
+        params : 
+          collist : ['email_text']
+          word_length : 1
+      - name : remove_business_prefix
+        params :
+          collist : ['email_text']
+          search_pattern : r'^(project update|team sync|meeting|schedule|report|budget review)\s*-\s*'
     transform_steps : 
       - name : merge_columns
         params : 
           column1 : 'subject'
           column2 : 'email_text'
           target_col : 'text'
+      - name : reorder_columns
+        params : 
+          reorder_col : 'text'
+
+eda:
+  base_folder: "C:\\Aditya\\ML_Practice\\ML_Projects\\Spam_Ham_Model_RNN_Word2Vec\\artifacts"
+  target_col: label
+  dpi : 300
+  bbox_inches : tight
+  extension : png
+
+  plot_steps:
+    - name : text_label_analysis
+      params :
+        text_column : 'text'
+        stopwords : english
+        min__df : 5
+        word_count : 20
+  spam_words_chi_square_scores:
+    word_count : 20
+    file_name : 'Top n Chi-Square Features'
+  spam_ham_percentage_comparison:
+    file_name : 'Spam vs Ham Word Frequency Comparison'
+  chi_score_distribution: 
+    bins : 50
+    file_name : 'Chi Scores Distribution'
+  spam_ham_clusters:
+    model_name : 'all-MiniLM-L6-V2'
+    n_components : 2
+    random_state : 43
+    file_name : 'Spam Ham Clusters'
+
+
 
         
 

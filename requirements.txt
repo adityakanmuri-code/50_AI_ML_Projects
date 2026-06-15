@@ -16,3 +16,4 @@ emoji
 imblearn
 kaggle
 python-dotenv
+sentence_transformers

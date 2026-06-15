@@ -212,3 +212,12 @@ class DataCleaning:
             return dataframe
         except Exception as e:
             raise CustomException(e,sys)
+
+    def reorder_columns(self,dataframe:pd.DataFrame = None,reorder_col:str = None):
+        try:
+            logging.info('Reordering the columns in the dataframe')
+            new_collist =[reorder_col] + [col for col in dataframe.columns if col != reorder_col]
+            dataframe = dataframe[new_collist]
+            return dataframe
+        except Exception as e:
+            raise CustomException(e,sys)
