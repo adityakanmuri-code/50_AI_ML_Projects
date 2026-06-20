@@ -54,9 +54,14 @@ transformation:
       - name : reorder_columns
         params : 
           reorder_col : 'text'
+          rearrange_order : 'first'
+      - name : reorder_columns
+        params : 
+          reorder_col : 'label'
+          rearrange_order : 'last'
 
 eda:
-  base_folder: "C:\\Aditya\\ML_Practice\\ML_Projects\\Spam_Ham_Model_RNN_Word2Vec\\artifacts"
+  base_folder: "C:\\Aditya\\ML_Practice\\ML_Projects\\Spam_Ham_Model_RNN_Word2Vec\\artifacts\\data_analysis_plots"
   target_col: label
   dpi : 300
   bbox_inches : tight
@@ -71,17 +76,58 @@ eda:
         word_count : 20
   spam_words_chi_square_scores:
     word_count : 20
-    file_name : 'Top n Chi-Square Features'
+    file_name : 'Top_n_Chi-Square_Features'
   spam_ham_percentage_comparison:
-    file_name : 'Spam vs Ham Word Frequency Comparison'
+    file_name : 'Spam_Ham_Word_Frequency_Comparison'
   chi_score_distribution: 
     bins : 50
-    file_name : 'Chi Scores Distribution'
+    file_name : 'Chi_Scores_Distribution'
   spam_ham_clusters:
     model_name : 'all-MiniLM-L6-V2'
     n_components : 2
     random_state : 43
-    file_name : 'Spam Ham Clusters'
+    file_name : 'Spam_Ham_Clusters'
+  label_distribution_analysis:
+    ticks : [0,1]
+    labels : ['Ham','Spam']
+    rotation : 90
+    file_name : 'Spam_Ham_Distribution'
+model:
+  word_coverage_threshold: 70
+  encode_data:
+    collist : ['sender_domain']
+    handle_unknown : 'ignore'
+    remainder : 'passthrough'
+    sparse_output : False
+  split_train_test:
+    train_size : 0.7
+    random_state : 43
+    stratify_flag : True
+    target_col : 'label'
+  oversample:
+    p_threshold : 0.05
+  tokenize_text :
+    max_vocab_size : 50000
+    max_seq_length : 300
+    output_mode : int
+    standardize : 'lower_and_strip_punctuation'
+    txt_column: 'text'
+  glove_dictionary:
+    glove_path : "C:\\Aditya\\ML_Practice\\ML_Projects\\Spam_Ham_Model_RNN_Word2Vec\\artifacts\\metadata"
+    glove_file_name : "glove.6B.300d.txt"
+    encoding : 'utf-8'
+    embedding_dim : 300
+  model_output:
+    base_path : "C:\\Aditya\\ML_Practice\\ML_Projects\\Spam_Ham_Model_RNN_Word2Vec\\artifacts\\models"
+    embed_matrix_fname : embedding_matrix
+    embed_matrix_extn : npy
+    vocab_fname : vocab
+    word_index_fname : word_index
+    text_vectorizer_fname : vectorizer
+    model_extn : pkl
+
+
+
 
 
 

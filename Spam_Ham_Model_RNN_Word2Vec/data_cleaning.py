@@ -213,10 +213,17 @@ class DataCleaning:
         except Exception as e:
             raise CustomException(e,sys)
 
-    def reorder_columns(self,dataframe:pd.DataFrame = None,reorder_col:str = None):
+    def reorder_columns(self,dataframe:pd.DataFrame = None,reorder_col:str = None,rearrange_order:str = ''):
         try:
             logging.info('Reordering the columns in the dataframe')
-            new_collist =[reorder_col] + [col for col in dataframe.columns if col != reorder_col]
+            if rearrange_order == 'first':
+                new_collist =[reorder_col] + [col for col in dataframe.columns if col != reorder_col]
+            elif rearrange_order == 'last':
+                new_collist =[col for col in dataframe.columns if col != reorder_col] + [reorder_col]
+            else:
+                error_message = f'ERROR : Please specify the rearrange_order'
+                logging.info(error_message)
+                raise CustomException(error_message,sys) 
             dataframe = dataframe[new_collist]
             return dataframe
         except Exception as e:

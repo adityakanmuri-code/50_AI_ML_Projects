@@ -35,6 +35,10 @@ class EDA:
             self.hamspam_cluster_n_comp = self.config.get('eda','spam_ham_clusters','n_components')
             self.hamspam_cluster_random_state = self.config.get('eda','spam_ham_clusters','random_state')
             self.hamspam_cluster_fname = self.config.get('eda','spam_ham_clusters','file_name')
+            self.hamspam_dist_ticks = self.config.get('eda','label_distribution_analysis','ticks')
+            self.hamspam_dist_labels = self.config.get('eda','label_distribution_analysis','labels')
+            self.hamspam_dist_rotation = self.config.get('eda','label_distribution_analysis','rotation')
+            self.hamspam_dist_fname = self.config.get('eda','label_distribution_analysis','file_name')
         except Exception as e:
             raise CustomException(e,sys)
     
@@ -87,6 +91,7 @@ class EDA:
             self.__spam_ham_percentage_comparison(pct_data)
             self.__chi_score_distribution(chi_scores)
             self.__spam_ham_clusters(dataframe)
+            self.__label_distribution_analysis(dataframe)
         except Exception as e:
             raise CustomException(e,sys)
     
@@ -118,6 +123,18 @@ class EDA:
         except Exception as e:
             raise CustomException(e,sys)
 
+    def __label_distribution_analysis(self,df:pd.DataFrame=None):
+        try:
+            plt.figure(figsize=(10,8))
+            df['label'].value_counts().plot(kind = 'bar')
+            plt.xlabel('Message Type')
+            plt.ylabel('Count')
+            plt.title('Distribution between Spam and Ham')
+            plt.xticks(ticks = self.hamspam_dist_ticks,labels = self.hamspam_dist_labels,rotation = self.hamspam_dist_rotation)
+            self.__save_plots(self.hamspam_dist_fname)
+        except Exception as e:
+            raise CustomException(e,sys)
+
     def __chi_score_distribution(self,chi_scores:object = None):
         try:
             plt.figure(figsize=(10,6))
@@ -141,9 +158,9 @@ class EDA:
 
             plt.figure(figsize=(20,10))
             plt.scatter(data_2d[dataframe['label']==1, 0], data_2d[dataframe['label']==1, 1], 
-                c='red', alpha=0.5, label='Spam', s=10)
+                c='coral', alpha=0.5, label='Spam', s=10)
             plt.scatter(data_2d[dataframe['label']==0, 0], data_2d[dataframe['label']==0, 1], 
-                c='blue', alpha=0.5, label='Ham', s=10)
+                c='teal', alpha=0.5, label='Ham', s=10)
             plt.legend()
             plt.title('Spam Ham Clusters')
             self.__save_plots(self.hamspam_cluster_fname)
